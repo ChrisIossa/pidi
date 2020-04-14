@@ -8,6 +8,7 @@ from pkg_resources import iter_entry_points
 import mpd
 
 from . import brainz
+from . import localart
 from . import util
 
 
@@ -66,7 +67,7 @@ class ClientMPD():
         result = select.select([self._client], [], [], timeout)[0]
         return self._client in result
 
-    def get_art(self, cache_dir, size):
+    def get_art(self, cache_dir, size, artServer="localhost", artPort=6081):
         """Get the album art."""
         song = self.currentsong()
         if len(song) < 2:
@@ -90,13 +91,14 @@ class ClientMPD():
 
         else:
             print("album: Downloading album art...")
-
-            brainz.init()
-            album_art = brainz.get_cover(song, size)
+            album_art = localart.get_cover(song, 5, 5, artServer, artPort)
+            if not album_art:
+                brainz.init()
+                album_art = brainz.get_cover(song, size)
 
             if not album_art:
                 album_art = util.default_album_art()
-
+            print("hit")
             util.bytes_to_file(album_art, cache_dir / file_name)
             util.bytes_to_file(album_art, cache_dir / "current.jpg")
 

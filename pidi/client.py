@@ -91,14 +91,15 @@ class ClientMPD():
 
         else:
             print("album: Downloading album art...")
+            print("Attempting to use local server...")
             album_art = localart.get_cover(song, 5, 5, artServer, artPort)
             if not album_art:
+                print("Local server failed. Attempting to use MusicBrainz...")
                 brainz.init()
                 album_art = brainz.get_cover(song, size)
 
             if not album_art:
                 album_art = util.default_album_art()
-            print("hit")
             util.bytes_to_file(album_art, cache_dir / file_name)
             util.bytes_to_file(album_art, cache_dir / "current.jpg")
 

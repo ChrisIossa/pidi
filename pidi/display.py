@@ -90,12 +90,16 @@ class DisplayMPV(Display):
         self._player["autofit"] = "{size}x{size}".format(size=self._size)
         self._player["title"] = "pidi"
         self._art = None
+        self._pending_display = False
 
     def update_album_art(self, input_file):
         """Update album art."""
         self._art = str(input_file)
+        self._pending_display = True
 
     def redraw(self):
         """Display album art using MPV"""
-        if self._art is not None:
-            self._player.player(self._art)
+        if self._pending_display:
+            print(f"mpv: playing file {self._art}")
+            self._player.play(self._art)
+            self._pending_display = False

@@ -1,0 +1,32 @@
+name: CMake
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout codebase
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: |
+        sudo apt update && sudo apt install python3 python3-pip
+        pip3 install flake8 check-manifest twine pylint python-mpv python-mpd2 musicbrainzngs untangle
+    - name: Flake8
+      run: |
+        flake8 pidi setup.py --ignore E501
+    - name: Pylint
+      run: |
+        pylint pidi setup.py
+    - name: Check Manifest
+      run: |
+        check-manifest
+    - name: Build Packages
+      run: |
+        python3 setup.py bdist_wheel sdist
+    - name: Twine Check
+      run: |
+        twine check dist/*

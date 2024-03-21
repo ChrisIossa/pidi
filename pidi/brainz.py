@@ -24,17 +24,19 @@ def get_cover(song, size=250, retry_delay=5, retries=5):
                                    release=album,
                                    limit=1)
         release_id = data["release-list"][0]["release-group"]["id"]
-        print("album: Using release-id: {}".format(data['release-list'][0]['id']))
+        print("brainz: Using release-id: {}".format(data['release-list'][0]['id']))
 
         return mus.get_release_group_image_front(release_id, size=size)
 
-    except mus.NetworkError:
+    except mus.NetworkError as exc:
         if retries == 0:
-            raise mus.NetworkError("Failure connecting to MusicBrainz.org")
-        print("warning: Retrying download. {retries} retries left!".format(retires=retries))
+            raise mus.NetworkError("Failure connecting to MusicBrainz.org") from exc
+        print("brainz: Warning, retrying download. {retries} retries left!".format(retries=retries))
         time.sleep(retry_delay)
         get_cover(song, size, retries=retries - 1)
 
     except mus.ResponseError:
-        print("error: Couldn't find album art for",
+        print("brainz: Error, couldn't find album art for",
               "{artist} - {album}".format(artist=artist, album=album))
+
+    return None

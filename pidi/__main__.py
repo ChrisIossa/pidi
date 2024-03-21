@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-   ▄███████▄  ▄█  ████████▄   ▄█  
-  ███    ███ ███  ███   ▀███ ███  
-  ███    ███ ███▌ ███    ███ ███▌ 
-  ███    ███ ███▌ ███    ███ ███▌ 
-▀█████████▀  ███▌ ███    ███ ███▌ 
-  ███        ███  ███    ███ ███  
-  ███        ███  ███   ▄███ ███  
- ▄████▀      █▀   ████████▀  █▀   
+   ▄███████▄  ▄█  ████████▄   ▄█
+  ███    ███ ███  ███   ▀███ ███
+  ███    ███ ███▌ ███    ███ ███▌
+  ███    ███ ███▌ ███    ███ ███▌
+▀█████████▀  ███▌ ███    ███ ███▌
+  ███        ███  ███    ███ ███
+  ███        ███  ███   ▄███ ███
+ ▄████▀      █▀   ████████▀  █▀
 
 Pidi - Pirate Display
 
@@ -56,13 +56,6 @@ def get_args(display_types, client_types):
                      help="Use a custom mpd port.",
                      default=6600)
 
-    arg.add_argument("--art_port",
-                     help="Use a custom port for the album art filesystem.",
-                     default=6081)
-
-    arg.add_argument("--art_server",
-                     help="Use a remote server for the album art filesystem.",
-                     default="localhost")
 
     arg.add_argument("--server",
                      help="Use a remote server instead of localhost.",
@@ -140,9 +133,16 @@ def main():
                 title = currentsong.get('title', 'Untitled')
                 artist = currentsong.get('artist', 'No Artist')
                 album = currentsong.get('album', title)
-                current_track = "{title} - {artist}, {album}".format(title=title, artist=artist, album=album)
+
+                current_track = f"{title} - {artist}, {album}"
+
                 if current_track != last_track:
-                    client.get_art(args.cache_dir, args.size, args.art_server,args.art_port)
+                    print(f"pidi: got new track: {current_track}")
+
+                get_art = current_track != last_track or getattr(client, "pending_art", False)
+
+                if get_art:
+                    client.get_art(args.cache_dir, args.size)
                     display.update_album_art(args.cache_dir / "current.jpg")
                     last_track = current_track
 
@@ -150,7 +150,7 @@ def main():
                     status['random'] == '1',
                     status['repeat'] == '1',
                     status['state'],
-                    0,
+                    int(status['volume']),
                     float(status.get('elapsed', 0)) / float(currentsong['time']),
                     float(status.get('elapsed', 0)),
                     title,

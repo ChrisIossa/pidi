@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/pidi.svg)](https://pypi.python.org/pypi/pidi/)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
-[![Build Status](https://travis-ci.org/pimoroni/pidi.svg?branch=master)](https://travis-ci.org/pimoroni/pidi)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pimoroni/pidi/CMake)
 [![Donate](https://img.shields.io/badge/donate-patreon-yellow.svg)](https://www.patreon.com/dyla)
 
 `pidi` is a plugin-compatible fork of `bum`, a daemon that downloads album art for songs playing in `mpd`/`mopidy` and displays them in a little window. 
@@ -37,13 +37,12 @@ Note: `pidi` is meant to be used with files that don't have embedded album art (
 pip3 install --user pidi
 ```
 
-
 ## Usage
 
 ```sh
-usage: pidi [-h] [--update-interval "i"] [--size "px"]
-                   [--cache_dir "/path/to/dir"] [--version] [--port PORT]
-                   [--server SERVER] [--no_display] [--display {dummy,tk,mpv}]
+usage: pidi [-h] [--update-interval "i"] [--fps FPS] [--size "px"] [--cache_dir "/path/to/dir"] [--version]
+            [--no_display] [--display {dummy,mpv,file,tk}] [--client {mpd,ssnc}] [--port PORT]
+            [--server SERVER]
 
 pidi - Download and display album art for mpd tracks.
 
@@ -51,17 +50,30 @@ optional arguments:
   -h, --help            show this help message and exit
   --update-interval "i"
                         overlay update interval in seconds.
+  --fps FPS             frames per second.
   --size "px"           what size to display the album art in.
   --cache_dir "/path/to/dir"
                         Where to store the downloaded cover art.
   --version             Print "pidi" version.
+  --no_display          Only download album art, don't display.
+  --display {dummy,mpv,file,tk}
+                        Display class to use.
+  --client {mpd,ssnc}   Client class to use.
   --port PORT           Use a custom mpd port.
   --server SERVER       Use a remote server instead of localhost.
-  --no_display          Only download album art, don't display.
-  --display {dummy,tk,mpv}
-                        Display class to use.
 ```
 
+## Changelog
+
+### v0.1.0
+
+* Add ability to plug clients into pidi
+* Add Shairport Sync client - see https://github.com/pimoroni/pidi/issues/5
+* Fix compatbility with new versions of mpv and python-mpd2
+
+### v0.0.1 / 0.0.2
+
+* Initial release(s)
 
 ## Donate
 

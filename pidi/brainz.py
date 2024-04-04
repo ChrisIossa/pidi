@@ -38,5 +38,7 @@ def get_cover(song, size=250, retry_delay=5, retries=5):
     except mus.ResponseError:
         print("brainz: Error, couldn't find album art for",
               "{artist} - {album}".format(artist=artist, album=album))
-
+    except Exception as err:
+        print(f"brainz: Caught {err} while getting art for",
+              "{artist} - {album}".format(artist=artist, album=album))
     return None

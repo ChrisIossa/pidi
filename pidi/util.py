@@ -3,7 +3,9 @@ Util functions.
 """
 import pathlib
 import base64
-
+import requests
+from io import BytesIO
+from PIL import Image
 
 def bytes_to_file(input_data, output_file):
     """Save bytes to a file."""
@@ -30,3 +32,23 @@ nlh5uWpzxedq0ZWmq1RXuK6OWVm7KndFbzfAToJdCDsYdj/onNh1sWNjt8dOkV0mO1R2t+iM2VWz
 I2c3z06gXUQ7kIvJayvx2TW142q31k6vXWI7zIviZEvY2BW3o2433k6+TwF8grAoPreEq089fGLi
 0xaf1PiUxydEF/Re2hvtG6k8p7n4F+LQAAAAAElFTkSuQmCC
 """)
+
+def download_image(image_url,retry_delay=5,retries=10):
+    try:
+        img=requests.get(image_url, stream=True)
+        img.raise_for_status()
+        if img.ok:
+            im = Image.open(BytesIO(img.content))
+            im.thumbnail((250,250), Image.LANCZOS)
+            imgByteArr = BytesIO()
+            im.save(imgByteArr, format=im.format)
+            imgByteArr = imgByteArr.getvalue()
+            return imgByteArr
+        return img
+    except requests.exceptions.HTTPError:
+        return None
+    except requests.exceptions.RequestException:
+        if retries == 0:
+            return None
+        time.sleep(retry_delay)
+        download_image(image_url, retry_delay, retries=retries - 1)

@@ -52,15 +52,6 @@ def get_args(display_types, client_types):
     arg.add_argument("--version", action="store_true",
                      help="Print \"pidi\" version.")
 
-    arg.add_argument("--port",
-                     help="Use a custom mpd port.",
-                     default=6600)
-
-
-    arg.add_argument("--server",
-                     help="Use a remote server instead of localhost.",
-                     default="localhost")
-
     arg.add_argument("--no_display",
                      action="store_true",
                      help="Only download album art, don't display.")
@@ -117,7 +108,7 @@ def main():
 
     display = display_types[args.display](args)
 
-    client = client_types[args.client](args.port, args.server)
+    client = client_types[args.client](args)
 
     last_track = ''
     last_update = 0
@@ -150,7 +141,7 @@ def main():
                     status['random'] == '1',
                     status['repeat'] == '1',
                     status['state'],
-                    int(status['volume']),
+                    int(status['volume'] if 'volume' in status else 0),
                     float(status.get('elapsed', 0)) / float(currentsong['time']),
                     float(status.get('elapsed', 0)),
                     title,
@@ -167,3 +158,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

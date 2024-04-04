@@ -194,20 +194,53 @@ class ClientSnapcast():
                 self.websocket.close()
         print("Ending SnapcastRpcWebsocketWrapper loop")
     
-    def __get_stream_id_from_server_status(self, status, client_id):
+    def __get_info_from_server_status(self, status, client_id):
         try:
+            bkp_return_obj = {}
             for group in status['server']['groups']:
                 for client in group['clients']:
-                    if client['id'] == client_id:
-                        return group['stream_id']
-            for group in status['server']['groups']:
-                for client in group['clients']:
-                    if client['name'] == client_id:
-                        return group['stream_id']
-        except:
-            print('Failed to parse server status')
-        print(f'Failed to get stream id for client {client_id}')
+                    if client.get('id') == client_id:
+                        return {
+                            "stream_id": group.get('stream_id', None),
+                            "volume": client.get('config',None).get('volume', None),
+                            "host": client.get('host', None)
+                        }
+                    if client.get('name',"") == client_id:
+                        bkp_return_obj = {
+                            "stream_id": group.get('stream_id', None),
+                            "volume": client.get('config',None).get('volume', None),
+                            "host": client.get('host', None)
+                        }
+            return bkp_return_obj
+        except Exception as e:
+            print (
+                    'Failed to parse server status',
+                    f"{type(e)}: {e}"
+                  )
+        print(f'Failed to get info for client {client_id}')
         return None
+      
+    def __get_stream_id_from_server_status(self, status, client_id):
+        return self.__get_info_from_server_status(status, client_id).get('stream_id')
+    
+    def __update_client_info(self, info):
+        self._stream_id = info.get('stream_id')
+        self.volume = 0 if info.get('volume').get('muted')=='true' else info.get('volume').get('percent')
+    
+    # def __get_stream_id_from_server_status(self, status, client_id):
+    #     try:
+    #         for group in status['server']['groups']:
+    #             for client in group['clients']:
+    #                 if client['id'] == client_id:
+    #                     return group['stream_id']
+    #         for group in status['server']['groups']:
+    #             for client in group['clients']:
+    #                 if client['name'] == client_id:
+    #                     return group['stream_id']
+    #     except:
+    #         print('Failed to parse server status')
+    #     print(f'Failed to get stream id for client {client_id}')
+    #     return None
     
     def __update_metadata(self, meta):
         try:
@@ -257,9 +290,11 @@ class ClientSnapcast():
                 del self._request_map[id]
                 print(f'Received response to {request}')
                 if request == 'Server.GetStatus':
-                    self._stream_id = self.__get_stream_id_from_server_status(
-                        jmsg['result'], self.client_id)
-                    print(f'Stream id: {self._stream_id}')
+                    self.__update_client_info(self.__get_info_from_server_status(jmsg['result'], self.client_id))
+                    print(
+                            f'Stream id: {self._stream_id}',
+                            f'Volume: {self.volume}',
+                        )
                     for stream in jmsg['result']['server']['streams']:
                         if stream['id'] == self._stream_id:
                             if 'properties' in stream:
@@ -269,8 +304,12 @@ class ClientSnapcast():
             self._stream_id = self.__get_stream_id_from_server_status(
                 jmsg['params'], self.client_id)
             print(f'Stream id: {self._stream_id}')
+
         elif jmsg['method'] == "Group.OnStreamChanged":
             self.send_request("Server.GetStatus")
+        elif jmsg['method'] == "Client.OnVolumeChanged" and jmsg['params']['id'] == self.client_id:
+            self.volume = jmsg['params']['volume']['percent']
+            print(f"Volume: {self.volume}%")
         elif jmsg["method"] == "Stream.OnProperties":
             stream_id = jmsg["params"]["id"]
             print(
@@ -395,6 +434,9 @@ class ClientSnapcast():
             title=title
         ))
         self.pending_art = False
+    
+    def control(command):
+        self.send_request("Stream.Control", {"id": self._stream_id, "command": command})
         
 class ClientMPD():
     """Client for MPD and MPD-like (such as Mopidy) music back-ends."""
@@ -475,3 +517,18 @@ class ClientMPD():
                 title=title
             ))
         self.pending_art = False
+        
+    
+    def control(command, params=None):
+        if command == "next":
+            self._client.next()
+        elif command == "pause":
+            self._client.pause(True)
+        elif command == "play":
+            self._client.play()            
+        elif command == "playPause":
+            self._client.pause()
+        elif command == "previous":
+            self._client.next()
+        elif command == "stop":
+            self._client.stop()

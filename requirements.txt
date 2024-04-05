@@ -1,0 +1,9 @@
+musicbrainzngs==0.7.1
+Pillow==10.3.0
+python-mpv==1.0.5
+python_mpd2==3.1.1
+Requests==2.31.0
+setuptools==65.5.0
+untangle==1.2.1
+websocket_client==1.7.0
+st7789==0.0.4

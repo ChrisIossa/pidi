@@ -6,4 +6,5 @@ Requests==2.31.0
 setuptools==65.5.0
 untangle==1.2.1
 websocket_client==1.7.0
-st7789==0.0.4
+st7789>=0.0.4
+pidi-display-st7789>=0.1.2 

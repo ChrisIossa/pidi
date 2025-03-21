@@ -7,7 +7,7 @@ setuptools>=65.5.0
 untangle>=1.2.1
 websocket_client>=1.7.0
 st7789>=0.0.4
-pidi-display-st7789>=0.1.2
 gpiozero>=2.0.1
 lgpio>=0.2.2.0
 pigpio>=1.78
+git+https://github.com/ChrisIossa/pidi-plugins.git#egg=pidi-display-st7789&subdirectory=pidi-display-st7789

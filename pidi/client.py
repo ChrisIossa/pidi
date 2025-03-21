@@ -305,7 +305,7 @@ class ClientSnapcast():
                 jmsg['params'], self.client_id)
             print(f'Stream id: {self._stream_id}')
 
-        elif jmsg['method'] == "Group.OnStreamChanged":
+        elif any(jmsg['method'] == method for method in ("Group.OnStreamChanged", "Stream.OnUpdate")):
             self.send_request("Server.GetStatus")
         elif jmsg['method'] == "Client.OnVolumeChanged" and jmsg['params']['id'] == self.client_id:
             self.volume = jmsg['params']['volume']['percent']

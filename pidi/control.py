@@ -9,12 +9,12 @@ class Action(IntEnum):
     PLAY = 5
     STOP = 16
     PREV = 6
-    NEXT = 24
+    NEXT = 20
 
 
 class Control():
 
-    # "handle_button" will be called every time a button is pressed
+    # "handle_press" will be called every time a button is pressed
     # It receives one argument: the associated input pin.
     def handle_press(self, action):
         print(action)
@@ -40,6 +40,7 @@ class Control():
         # We're watching the "FALLING" edge (transition from 3.3V to Ground) and
         # picking a generous bouncetime of 100ms to smooth out button presses.
         for pin, action in self._button_map:
-            print(f"Registering pin {pin}")
+            print(f"Registering pin {pin}, {action}")
             self._buttons[pin] = Button(pin)
-            self._buttons[pin].when_pressed = lambda: self.handle_press(action)
+            self._buttons[pin].when_pressed = lambda action=action: self.handle_press(action)
+        print(self._buttons)

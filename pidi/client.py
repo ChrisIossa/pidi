@@ -435,7 +435,7 @@ class ClientSnapcast():
         ))
         self.pending_art = False
     
-    def control(command):
+    def control(self, command):
         self.send_request("Stream.Control", {"id": self._stream_id, "command": command})
         
 class ClientMPD():
@@ -519,7 +519,7 @@ class ClientMPD():
         self.pending_art = False
         
     
-    def control(command, params=None):
+    def control(self, command, params=None):
         if command == "next":
             self._client.next()
         elif command == "pause":

@@ -21,7 +21,7 @@ import sys
 
 from .display import get_display_types
 from .client import get_client_types
-
+from .control import Control
 from .__init__ import __version__
 
 
@@ -63,6 +63,10 @@ def get_args(display_types, client_types):
     arg.add_argument("--client", choices=client_types.keys(),
                      help="Client class to use.",
                      default='mpd')
+    
+    arg.add_argument("--control",
+                     action="store_true",
+                     help="Enable GPIO control (for PirateAudio pHATs)")
 
     # Strip out --help so we can parse_known_args
     # without triggering help text output.
@@ -110,9 +114,13 @@ def main():
 
     client = client_types[args.client](args)
 
+    if args.control:
+        Control(client)
     last_track = ''
     last_update = 0
 
+    
+    
     while True:
         if client.update_pending() or time.time() - last_update > float(args.update_interval):
             status = client.status()

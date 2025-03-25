@@ -152,6 +152,7 @@ class ClientSnapcast():
     def __init__(self, args=None):
         """Initialize mpd."""
         
+        self._stream_state = ""
         
         self.client_id = args.client_id
         self.title = ""
@@ -225,7 +226,8 @@ class ClientSnapcast():
     
     def __update_client_info(self, info):
         self._stream_id = info.get('stream_id')
-        self.volume = 0 if info.get('volume').get('muted')=='true' else info.get('volume').get('percent')
+        self.volume = 0 if info.get('volume').get('muted')==True else info.get('volume').get('percent')
+        self.state = 'muted' if info.get('volume').get('muted')==True else self._stream_state
     
     # def __get_stream_id_from_server_status(self, status, client_id):
     #     try:
@@ -267,8 +269,9 @@ class ClientSnapcast():
                 props['_received'] = time.time()
             # ignore "internal" properties, starting with "_"
             
-            
-            self.state = {'playing': 'play', 'paused': 'pause', 'stopped': 'stop', '':''}[(props.get('playbackStatus') or '')]
+            self._stream_state = {'playing': 'play', 'paused': 'pause', 'stopped': 'stop', '':''}[(props.get('playbackStatus') or '')]
+            if self.state != 'muted':
+                self.state = self._stream_state
             print(f"State: {self.state}")
             self.volume = props.get('volume') or 0
             self.shuffle = props.get('shuffle') or False
@@ -309,7 +312,10 @@ class ClientSnapcast():
             self.send_request("Server.GetStatus")
         elif jmsg['method'] == "Client.OnVolumeChanged" and jmsg['params']['id'] == self.client_id:
             self.volume = jmsg['params']['volume']['percent']
+            self.state = 'muted' if  jmsg['params']['volume'].get('muted')==True else self._stream_state
             print(f"Volume: {self.volume}%")
+            print(f"State: {self.state}%")
+            self._update_pending = True
         elif jmsg["method"] == "Stream.OnProperties":
             stream_id = jmsg["params"]["id"]
             print(
